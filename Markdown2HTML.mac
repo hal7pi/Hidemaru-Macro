@@ -1,0 +1,44 @@
+setcompatiblemode 0x0F;
+begingroupundo;
+    $filename = basename2;
+//    message "現在のファイル名は、 " + $filename + "です";
+    #filename_length = strlen($filename);
+//    message "ファイル名の長さは拡張子も含み、 " + str(#filename_length) + "字です";
+    #period_position = strstr($filename,".");
+//    message "#period_positionは、 " + str(#period_position) + "です";
+    $filename_wo_extension = leftstr($filename,#period_position);
+//    message "$filename_wo_positonは、 " + $filename_wo_extension + "です";
+    $file_extension = rightstr($filename,#filename_length - #period_position - 1);
+//    message "filename_extensionは、 " + $file_extension + "です";
+    if ($file_extension!="md") {
+        message "マークダウンファイルではないようです。";
+        goto Label1;
+        } else {
+        $html_filename = $filename_wo_extension + ".html";
+//        message "$html_filenameは、 " + $html_filename + "です";
+        runex "pandoc --toc --data-dir=C:\\Users\\hal7pi\\Documents\\Pandoc --template=default --no-highlight -f markdown_github-fenced_code_blocks-fenced_code_attributes+backtick_code_blocks-autolink_bare_uris+strikeout+auto_identifiers-ascii_identifiers-hard_line_breaks+raw_html+emoji+yaml_metadata_block+tex_math_dollars -t html -s -c C:\\Users\\hal7pi\\Documents\\Pandoc\\2018-02-12-style.css " + $filename
+        , 1    //sync 0:async, 1:sync
+        , 0, ""    //stdin 0:none, 1:auto, 2:<file, 3:(reserved), 4:current content, 5:selection
+        , 2, $html_filename //stdout 0:none, 1:auto, 2:>file, 3:>>file, 4:new, 5:insert, 6:replace, 7:>output pane, 8:>>output pane
+        , 1, ""    //stderr 0:none, 1:auto or >>stdout, 2-8:same as stdout's param
+        , 0, ""    //folder 0:none, 1:current, 2:specify, 3:(reserved), 4:exe's
+        , 1        //show 0:auto, 1:show, 2:hide, 3-13:ShellExecute()'s SW_
+        , 0        //draw 0:draw, 1:no draw when stdout redirected
+        , 6        //encode 0:ansi, 2:utf-16, 6:utf-8
+        , 0        //extended flags
+        ;
+// $html_filenameが既に開いていたら（閉じずに）そのウィンドウを一番手前に持ってきて内容を書き換える
+        #window_number = findhidemaru($html_filename);    // まずウィンドウ番号を取得
+        if (#window_number != -1) {     // $html_filenameのウィンドウが見つかった
+        #window_handle = hidemaruhandle(#window_number);        // ウィンドウハンドルを取得
+        setactivehidemaru #window_handle;       // そのウィンドウを手前にする
+        reopen;
+    } else {
+    openfile $html_filename;
+    }
+    #markdown_window_number = findhidemaru($filename);
+    #markdown_window_handle = hidemaruhandle(#markdown_window_number);
+    setactivehidemaru #markdown_window_handle;
+    }
+Label1:
+endgroupundo;

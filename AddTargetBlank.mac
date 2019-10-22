@@ -1,0 +1,2 @@
+replaceallfast "target=\"_blank\"", "", nocasesense;
+replaceallfast "<a href=\"(?!#).*?\"", "\\0 target=\"_blank\" rel=\"noopener noreferrer\"", regular, nocasesense;
